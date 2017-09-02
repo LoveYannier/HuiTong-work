@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tarena.ht.mapper.UserMapper">
+	<select id="findUserList" resultMap="UserRM">
+		select u.user_id , u.dept_id
+		,
+		d.dept_name ,u.username , u.password , u.state, u.name
+		,u.card_no,u.manager_id,
+		u.manager_name,u.join_date,u.salary,u.birthday,u.gender,u.station ,
+		u.telephone,u.user_level , u.order_no ,
+		u.create_by,u.create_dept,u.create_time ,u.update_by,u.update_time
+		from
+
+		(select u.user_id, u.dept_id,u.username,u.password,u.state ,p.name
+		,p.card_no,p.manager_id,p.manager_name,p.join_date,p.salary,p.birthday,p.gender,p.station,p.telephone,p.user_level,p.order_no
+		, u.create_by,u.create_dept,u.create_time ,u.update_by,u.update_time
+		from
+		user_p u
+		left join
+
+		(select u.user_info_id,u.name,u.card_no,u.manager_id,p.name as
+		MANAGER_NAME,u.join_date,u.salary,u.birthday,u.gender,u.station,u.telephone,u.user_level,u.remark,u.order_no
+		from
+		user_info_p u
+		left join
+		user_info_p p
+		on u.manager_id =
+		p.user_info_id) p
+
+		on u.user_id = p.user_info_id) u
+
+		left join
+		dept_p d
+		on u.dept_id = d.dept_id
+	</select>
+
+	<resultMap type="User" id="UserRM">
+		<!-- User表的结果集信息 -->
+		<id property="userId" column="USER_ID" />
+		<result property="username" column="USERNAME" />
+		<result property="password" column="PASSWORD" />
+		<result property="state" column="STATE" />
+		<result property="createBy" column="CREATE_BY" />
+		<result property="createDept" column="CREATE_DEPT" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="updateBy" column="UPDATE_BY" />
+		<result property="updateTime" column="UPDATE_TIME" />
+
+		<!-- 关联部门dept -->
+		<association property="dept" javaType="Dept">
+			<id property="deptId" column="DEPT_ID" />
+			<result property="deptName" column="DEPT_NAME" />
+		</association>
+
+		<!-- 关联用户信息 userInfo -->
+		<association property="userInfo" javaType="UserInfo">
+			<id property="userInfoId" column="USER_ID" />
+			<result property="name" column="NAME" />
+			<result property="cardNo" column="CARD_NO" />
+			<result property="joinDate" column="JOIN_DATE" />
+			<result property="salary" column="SALARY" />
+			<result property="birthday" column="BIRTHDAY" />
+			<result property="gender" column="GENDER" />
+			<result property="station" column="STATION" />
+			<result property="telephone" column="TELEPHONE" />
+			<result property="userLevel" column="USER_LEVEL" />
+			<result property="remark" column="REMARK" />
+			<result property="orderNo" column="ORDER_NO" />
+			<!-- 用户信息 自关联 自身的领导信息 -->
+			<association property="manager" javaType="UserInfo">
+				<id property="userInfoId" column="MANAGER_ID" />
+				<result property="name" column="MANAGER_NAME" />
+			</association>
+		</association>
+	</resultMap>
+
+	<!-- 状态改变 -->
+	<update id="updateState">
+		update user_p set state= #{state} where
+		user_id=#{userId}
+	</update>
+
+	<!-- 删除多个用户 -->
+	<delete id="deleteUsers">
+		delete from user_p where user_id in(
+		<foreach collection="array" item="userId" separator=",">
+			#{userId}
+		</foreach>
+		)
+
+	</delete>
+
+	<!-- 查找已有的领导用户 -->
+	<select id="findManagerList" resultType="UserInfo">
+		select user_info_id ,
+		name from user_info_p
+	</select>
+	
+	<!-- 插入新增的用户信息 -->
+	<insert id="saveUser" parameterType="User">
+		insert into
+		user_p(user_id,dept_id,username,password,state,create_by,create_dept,create_time,update_by,update_time)
+		values(
+		#{userId},
+		#{dept.deptId},
+		#{username},
+		#{password},
+		1,
+		#{createBy,jdbcType=VARCHAR},
+		#{createDept,jdbcType=VARCHAR},
+		sysdate,
+		#{updateBy,jdbcType=VARCHAR},
+		sysdate
+		)
+	</insert>
+
+	<!-- 查看用户信息 -->
+	<select id="findUserOne" resultMap="UserRM">
+		select u.user_id , u.dept_id
+		,
+		d.dept_name ,u.username , u.password , u.state, u.name
+		,u.card_no,u.manager_id,
+		u.manager_name,u.join_date,u.salary,u.birthday,u.gender,u.station ,
+		u.telephone,u.user_level , u.order_no ,
+		u.create_by,u.create_dept,u.create_time ,u.update_by,u.update_time
+		from
+
+		(select u.user_id, u.dept_id,u.username,u.password,u.state ,p.name
+		,p.card_no,p.manager_id,p.manager_name,p.join_date,p.salary,p.birthday,p.gender,p.station,p.telephone,p.user_level,p.order_no
+		, u.create_by,u.create_dept,u.create_time ,u.update_by,u.update_time
+		from
+		user_p u
+		left join
+
+		(select u.user_info_id,u.name,u.card_no,u.manager_id,p.name as
+		MANAGER_NAME,u.join_date,u.salary,u.birthday,u.gender,u.station,u.telephone,u.user_level,u.remark,u.order_no
+		from
+		user_info_p u
+		left join
+		user_info_p p
+		on u.manager_id =
+		p.user_info_id) p
+
+		on u.user_id = p.user_info_id) u
+
+		left join
+		dept_p d
+		on u.dept_id = d.dept_id
+		
+		where u.user_id= #{userId}
+	</select>
+	
+	<!-- 保存更新之后的用户信息 -->
+	<update id="updateUser">
+		update user_p 
+		<set>
+			dept_id = #{dept.deptId},
+			username= #{username},
+			password=#{password},
+			state=#{state},
+			update_time=#{updateTime , jdbcType=VARCHAR},
+		</set>
+		where user_id =#{userId}
+	</update>
+	
+	<!-- 执行用户和角色的插入 -->
+	<insert id="saveUserRole">
+		insert into role_user_p values(#{roleId},#{userId})
+	</insert>
+	
+	<!-- 删除之前的角色 -->
+	<delete id="deleteRoleByUserId">
+		delete from role_user_p where user_id = #{userId}
+	</delete>
+	
+	<select id="findRoleByUserId" resultType="string">
+		select * from role_user_p where user_id=#{userId}
+	
+	</select>
+	
+	<!--登陆时查找用户是否存在  -->
+	<select id="findUserByUserName" resultType="User">
+		select * from user_p where username= #{username}
+	</select>
+</mapper>

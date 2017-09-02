@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tarena.ht.mapper.RoleMapper">
+	<!-- 角色新增 -->
+	<insert id="saveRole">
+		insert into role_p values(
+			#{roleId},
+			#{name},
+			<!-- jdbcType=大写的数据类型 -->
+			#{remarks,jdbcType=VARCHAR},  
+			#{orderNo,jdbcType=INTEGER},
+			#{createBy,jdbcType=VARCHAR},
+			#{createDept,jdbcType=VARCHAR},
+			sysdate,
+			#{updateBy,jdbcType=VARCHAR},
+			sysdate
+		)
+		
+	</insert>
+
+	<!-- 删除角色 -->
+	<delete id="deleteRoles">
+		delete from role_p where role_id in(
+			<foreach collection="array" item="roleId" separator=",">
+				#{roleId}
+			</foreach>
+		)
+	</delete>
+	
+	<!-- 更新角色 -->
+	<update id="updateRole">
+		update role_p 
+		<set>
+			name=#{name},
+			remarks=#{remarks},
+			order_no=#{orderNo},
+			<if test="createBy != null">create_by=#{createBy},</if>
+			<if test="createDept != null">create_dept=#{createDept},</if>
+			<if test="createTime != null">create_time=#{createTime},</if>
+			<if test="updateBy != null">update_by=#{updateBy},</if>
+			update_time=SYSDATE
+		</set>
+		where role_id=#{roleId}
+	</update>
+	
+	<!-- 保存角色权限：向角色权限表中插入对应关系 -->
+	<insert id="saveRoleModule">
+		insert into role_module_p values(
+			#{moduleId},
+			#{roleId}
+		)
+		
+	</insert>
+	
+	<!-- 删除之前的数据 -->
+	<delete id="deleteRoleModule">
+		delete from role_module_p where role_id = #{roleId}
+	</delete>
+	
+	<!-- 查询角色已有的权限 -->
+	<select id="findModuleByRoleId" resultType="string">
+		select * from role_module_p where role_id = #{roleId}
+	</select>
+	
+	
+</mapper>

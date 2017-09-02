@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tarena.ht.mapper.DeptMapper">
+
+	<!-- 查询部门的sql语句 -->
+	<select id="findDeptList" resultMap="deptRM">
+		  SELECT d.dept_id,d.parent_id,p.dept_name AS PARENT_NAME,
+		  d.dept_name,d.state,d.create_by,d.create_dept,d.create_time,d.update_time,d.update_by FROM 
+		  dept_p d
+          LEFT JOIN
+ 		  dept_p p
+          ON d.parent_id = p.dept_id
+	</select>
+
+	<!-- 自关联：一对一映射关系 -->
+	<resultMap type="Dept" id="deptRM"> <!-- 记得定义别名 -->
+		<!-- 主键 -->
+		<id property="deptId" column="DEPT_ID" />
+		<!-- 结果集 -->
+		<result property="deptName" column="DEPT_NAME" />
+		<result property="state" column="STATE" />
+		<result property="createBy" column="CREATE_BY" />
+		<result property="createDept" column="CREATE_DEPT" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="updateBy" column="UPDATE_BY" />
+		<result property="updateTime" column="UPDATE_TIME" />
+
+		<!-- 关联对象 -->
+		<association property="parentDept" javaType="Dept">
+			<id property="deptId" column="PARENT_ID" />
+			<result property="deptName" column="PARENT_NAME" />
+		</association>
+	</resultMap>
+
+	<!-- 更新部门状态的sql语句 -->
+	<update id="updateState">
+		update dept_p set state=#{state}
+		where
+		dept_id=#{deptId}
+	</update>
+	
+	 <!-- 删除指定部门id的部门 
+	<delete id="deleteOne">
+		delete from dept_p where dept_id=#{deptId}
+	</delete> -->
+	
+	<!-- 删除方法的优化 -->
+	<delete id="deleteDepts">
+		delete from dept_p where dept_id in(
+			<foreach collection="array" item="deptId" separator=",">
+				#{deptId}
+			</foreach>
+		)
+	</delete>
+	
+	<!-- 新增部门 -->
+	<insert id="saveDept" parameterType="Dept">
+		insert into dept_p 
+		values(
+		#{deptId},#{parentDept.deptId},#{deptName},1,
+		#{createBy,jdbcType=VARCHAR},
+		#{createDept,jdbcType=VARCHAR},
+		SYSDATE,
+		#{updateBy,jdbcType=VARCHAR},
+		SYSDATE)
+	</insert>
+	
+	<!-- 查询部门详细信息  -->
+	<select id="findDeptOne" resultMap="deptRM">
+		SELECT d.dept_id,d.parent_id,p.dept_name AS PARENT_NAME,d.dept_name,d.state,d.create_by,d.create_dept,d.create_time,d.update_time,d.update_by FROM 
+      	 dept_p d
+          	LEFT JOIN
+      	 dept_p p
+          	ON d.parent_id = p.dept_id
+  		WHERE d.dept_id=#{deptId}
+	</select>
+	<!--获取部门下拉列表  -->
+	<select id="getDeptList" resultType="Dept">
+		SELECT dept_id,dept_name FROM dept_p 
+	</select>
+	
+	<update id="updateDept">
+		update dept_p set 
+			dept_name=#{deptName},
+			parent_id=#{parentDept.deptId},
+			state=#{state},
+			update_time=sysdate    
+		where dept_id=#{deptId}
+	</update>
+	
+</mapper>

@@ -9,6 +9,12 @@ public class User extends BaseEntity{
 	//用户角色
 	private Role role;
 	
+	
+	
+	
+	
+	
+	
 	private String userId;
 	private String username;
 	private String password;

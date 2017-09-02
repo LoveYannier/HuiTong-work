@@ -7,6 +7,7 @@ public class User extends BaseEntity{
 	private UserInfo userInfo;
 	private Dept dept;
 	//用户角色
+	//////////////////////////////////////////
 	private Role role;
 	private String userId;
 	private String username;
